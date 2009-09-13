@@ -62,7 +62,7 @@ public class UserSetting {
 		prop.setProperty(
 				"proxy.autodetect", String.valueOf(preference.isProxyAutoDetect()));
 		prop.setProperty("proxy.host", preference.getProxyHost());
-		prop.setProperty("proxy.port", preference.getProxyHost());
+		prop.setProperty("proxy.port", preference.getProxyPort());
 		
 		prop.setProperty("export.path", preference.getExportPath());
 		
