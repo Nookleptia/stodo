@@ -20,6 +20,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -32,23 +33,34 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.free.todolist.data.DataKit;
 import org.free.todolist.data.TodoItemListBuilder;
+import org.free.todolist.export.Exporter;
+import org.free.todolist.export.HTMLExporter;
+import org.free.todolist.model.FilterableListModel;
 import org.free.todolist.model.TodoItem;
-import org.free.todolist.model.TodoListModel;
 import org.free.todolist.ui.EditTaskDialog;
+import org.free.todolist.ui.FilterableList;
 import org.free.todolist.ui.NewMailDialog;
 import org.free.todolist.ui.NewTaskDialog;
 import org.free.todolist.ui.PreferenceDialog;
 import org.free.todolist.ui.TodoListCellRenderer;
 
+/**
+ * 
+ * @author juntao.qiu@gmail.com
+ * 
+ * created : 
+ * 
+ * modified : 2009/09/16
+ *
+ */
 public class ListMainFrame extends JFrame{
 	private static final long serialVersionUID = 320412556766404024L;
 	
@@ -61,9 +73,7 @@ public class ListMainFrame extends JFrame{
 	
 	private JPopupMenu pmOnItem;
 	
-	private TodoList todolist;
-	
-	private TodoListModel globalListModel;
+	private FilterableList ftodolist;
 	
 	public ListMainFrame(String title){
 		super(title);
@@ -224,29 +234,45 @@ public class ListMainFrame extends JFrame{
 		trayIcon.setToolTip("Simple todo manager");
 		
 		PopupMenu popup = new PopupMenu("sTodo");
-		popup.add(new MenuItem("Exit"));
-		popup.addSeparator();
-		popup.add(new MenuItem("Show"));
+		MenuItem iexit = new MenuItem("Exit");
+		iexit.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				int y = JOptionPane.showConfirmDialog(
+						null, 
+						"Confirm exit", 
+						"Confirm Exit Dialog", 
+						JOptionPane.YES_NO_OPTION);
+				if(y == JOptionPane.YES_OPTION){System.exit(0);}
+			}
+		});
+		
+		MenuItem show = new MenuItem("Show");
+		show.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				setExtendedState(NORMAL);
+				setVisible(true);
+			}
+		});
+		
+		popup.add(iexit);
+		popup.add(show);
 		
 		trayIcon.setPopupMenu(popup);
 		
     	TodoItemListBuilder builder = new TodoItemListBuilder();
     	List<TodoItem> tlist = builder.getTodoItems();
-    	TodoListModel listModel = new TodoListModel();
     	
+    	ftodolist = new FilterableList();
     	for(TodoItem item : tlist){
-    		listModel.addElement(item);
+    		ftodolist.addElement(item);
     	}
     	
-    	globalListModel = listModel;//set the global list model
+    	ftodolist.setCellRenderer(new TodoListCellRenderer());
+    	ftodolist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    	JScrollPane sp = new JScrollPane(ftodolist);
     	
-    	todolist = new TodoList(listModel);
-    	todolist.setCellRenderer(new TodoListCellRenderer());
-    	todolist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    	JScrollPane sp = new JScrollPane(todolist);
-    	
-    	todolist.addMouseListener(new ListItemListener());
-    	todolist.addMouseListener(popupListener);
+    	ftodolist.addMouseListener(new ListItemListener());
+    	ftodolist.addMouseListener(popupListener);
     	
     	JMenuBar mbar = new JMenuBar();
     	JMenu fileMenu = new JMenu("File");
@@ -284,7 +310,21 @@ public class ListMainFrame extends JFrame{
     	JMenu editMenu = new JMenu("Edit");
     	JMenuItem exportText = new JMenuItem("Export Text", new ImageIcon("imgs/exptotext.gif"));
     	JMenuItem exportExcel = new JMenuItem("Export Excel", new ImageIcon("imgs/exptoexcel.gif"));
+    	JMenuItem exportHtml = new JMenuItem("Export HTML", new ImageIcon("imgs/exptohtml.gif"));
+    	
+    	exportHtml.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				List<TodoItem> list = new LinkedList<TodoItem>();
+				for(int i = 0;i < ftodolist.getContents().getSize();i++){
+					list.add((TodoItem)ftodolist.getContents().getElementAt(i));
+				}
+				Exporter exporter = new HTMLExporter(list, "temp.html");
+				exporter.store();
+			}
+    	});
+    	
     	JMenuItem settings = new JMenuItem("Preference", new ImageIcon("imgs/customize.gif"));
+    	
     	settings.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e){
     			if(preferenceDialog == null){
@@ -297,6 +337,7 @@ public class ListMainFrame extends JFrame{
     	
     	editMenu.add(exportText);
     	editMenu.add(exportExcel);
+    	editMenu.add(exportHtml);
     	editMenu.addSeparator();
     	editMenu.add(settings);
     	
@@ -307,35 +348,58 @@ public class ListMainFrame extends JFrame{
     	setJMenuBar(mbar);
     	
     	final JToolBar toolbar = new JToolBar();
-    	toolbar.add(new SearchPanel(), BorderLayout.WEST);
+    	final JTextField filter = new JTextField();
+    	ftodolist.installFilterField(filter);
+    	toolbar.add(filter, BorderLayout.CENTER);
     	toolbar.setVisible(false);
     	
-    	addKeyListener(new KeyListener(){
-    		public void keyPressed(KeyEvent e) {
+    	KeyListener searchTrigger = new KeyListener(){
+			public void keyPressed(KeyEvent e) {
     			if(e.getKeyCode() == KeyEvent.VK_F &&
-    					e.getModifiers() == KeyEvent.CTRL_MASK){
+    					e.getModifiers() == KeyEvent.CTRL_MASK || e.getKeyCode() == KeyEvent.VK_SLASH){
     				if(toolbar.isVisible()){
     					toolbar.setVisible(false);
-    					restoreModel();
     				}else{
     					toolbar.setVisible(true);
+    					filter.requestFocus();
     				}
     			}
-    		}
+			}
 
-    		public void keyReleased(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {}
 
-    		public void keyTyped(KeyEvent e) {}
-    	});
+			public void keyTyped(KeyEvent e) {}
+    	};
     	
-    	JMenuItem filter = new JMenuItem("Search", new ImageIcon("imgs/filter.gif"));
-    	filter.addActionListener(new ActionListener(){
+    	KeyListener escapeTrigger = new KeyListener(){
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
+					if(toolbar.isVisible()){
+						filter.setText("");
+						toolbar.setVisible(false);
+						ListMainFrame.this.requestFocus();
+					}
+				}
+			}
+
+			public void keyReleased(KeyEvent e) {}
+
+			public void keyTyped(KeyEvent e) {}
+    	};
+    	
+    	filter.addKeyListener(escapeTrigger);
+    	
+    	addKeyListener(searchTrigger);
+    	ftodolist.addKeyListener(searchTrigger);
+    	
+    	JMenuItem search = new JMenuItem("Search", new ImageIcon("imgs/filter.gif"));
+    	search.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				toolbar.setVisible(true);
 			}
     	});
     	
-    	editMenu.add(filter);
+    	editMenu.add(search);
     	
     	getContentPane().add(toolbar, BorderLayout.NORTH);
     	
@@ -347,16 +411,14 @@ public class ListMainFrame extends JFrame{
     	setFocusable(true);
     	setVisible(true);
 	}
-
-
 	
 	public void updateList(TodoItem item){
-		TodoListModel model = todolist.getContents();
+		FilterableListModel model = ftodolist.getContents();
 		
-		for(int i = 0;i < model.size();i++){
-			TodoItem titem = (TodoItem)model.get(i);
+		for(int i = 0;i < model.getSize();i++){
+			TodoItem titem = (TodoItem)model.getElementAt(i);
 			if(titem.getId().equals(item.getId())){
-				model.remove(i);
+				model.removeElement(i);
 				model.addElement(item);
 				return;
 			}
@@ -366,23 +428,19 @@ public class ListMainFrame extends JFrame{
 	}
 	
 	public void deleteItem(TodoItem item){
-		TodoListModel model = todolist.getContents();
+		FilterableListModel model = ftodolist.getContents();
 		
-		for(int i = 0;i < model.size();i++){
-			TodoItem titem = (TodoItem)model.get(i);
+		for(int i = 0;i < model.getSize();i++){
+			TodoItem titem = (TodoItem)model.getElementAt(i);
 			if(titem.getId().equals(item.getId())){
-				model.remove(i);
+				model.removeElement(i);
 				break;
 			}
 		}
 	}
 	
-	public void restoreModel(){
-		todolist.setModel(globalListModel);
-	}
-	
 	public void refreshModel(List<TodoItem> list){
-		TodoListModel model = todolist.getContents();
+		FilterableListModel model = ftodolist.getContents();
 		model.clear();
 		
 		for(TodoItem item : list){
@@ -390,91 +448,6 @@ public class ListMainFrame extends JFrame{
 		}
 	}
 	
-	private class TodoList extends JList {
-		private static final long serialVersionUID = 1983671869007152218L;
-
-		public TodoList(TodoListModel tlm) {
-			super(tlm);
-		}
-
-		TodoListModel getContents() {
-			return (TodoListModel) getModel();
-		}
-		
-		public void setModel(ListModel model){
-			super.setModel(model);
-		}
-	}
-	
-	private class SearchPanel extends javax.swing.JPanel {
-		private static final long serialVersionUID = 6568455954424192056L;
-		
-	    private javax.swing.JButton btnSearch;
-	    private javax.swing.JComboBox cboxFields;
-	    private javax.swing.JLabel labBy;
-	    private javax.swing.JTextField tfFilter;
-		
-	    public SearchPanel() {
-	        initComponents();
-	    }
-
-
-	    private void initComponents() {
-
-	        cboxFields = new javax.swing.JComboBox();
-	        labBy = new javax.swing.JLabel();
-	        tfFilter = new javax.swing.JTextField();
-	        btnSearch = new javax.swing.JButton();
-
-	        setName("Form"); // NOI18N
-
-	        cboxFields.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "desc", "type", "timeout", "period", "status", "note" }));
-	        cboxFields.setName("cboxFields"); // NOI18N
-
-	        labBy.setText("By:"); // NOI18N
-	        labBy.setName("labBy"); // NOI18N
-
-	        tfFilter.setText(""); // NOI18N
-	        tfFilter.setName("tfFilter"); // NOI18N
-
-	        btnSearch.setText("Search"); // NOI18N
-	        btnSearch.setName("btnSearch"); // NOI18N
-
-	        btnSearch.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent e) {
-					List<TodoItem> list = new DataKit().searchList((String) cboxFields.getSelectedItem(), tfFilter.getText());
-					refreshModel(list);
-					//SearchPanel.this
-				}
-	        });
-	        
-	        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-	        this.setLayout(layout);
-	        layout.setHorizontalGroup(
-	            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-	            .addGroup(layout.createSequentialGroup()
-	                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-	                .addComponent(labBy)
-	                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-	                .addComponent(cboxFields, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-	                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-	                .addComponent(tfFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-	                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-	                .addComponent(btnSearch))
-	        );
-	        layout.setVerticalGroup(
-	            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-	            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-	                .addComponent(labBy)
-	                .addComponent(cboxFields, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-	                .addComponent(btnSearch)
-	                .addComponent(tfFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-	        );
-	        
-	        pack();
-	    }
-
-	}
 	public static void main(String[] args){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run() {
