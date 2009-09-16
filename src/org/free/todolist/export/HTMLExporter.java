@@ -30,7 +30,6 @@ public class HTMLExporter implements Exporter {
 	/* (non-Javadoc)
 	 * @see org.free.todolist.export.Exporter#doExport()
 	 */
-	@Override
 	public String doExport() {
 		return content;
 	}
@@ -38,7 +37,6 @@ public class HTMLExporter implements Exporter {
 	/* (non-Javadoc)
 	 * @see org.free.todolist.export.Exporter#store()
 	 */
-	@Override
 	public void store(){
 		FileWriter writer = null;
 		try {
