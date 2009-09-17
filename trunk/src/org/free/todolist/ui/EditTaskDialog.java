@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import org.free.todolist.ListMainFrame;
 import org.free.todolist.data.DataKit;
 import org.free.todolist.model.TodoItem;
 
@@ -31,10 +30,10 @@ public class EditTaskDialog extends javax.swing.JDialog{
     private javax.swing.JTextField tfPeriod;
     private javax.swing.JTextField tfTimeout;
 	
-	private ListMainFrame parent;
+	private MainFrame parent;
 	private TodoItem currentItem;
 	
-	public EditTaskDialog(ListMainFrame parent, String title, TodoItem item) {
+	public EditTaskDialog(MainFrame parent, String title, TodoItem item) {
 		super(parent, title, true);
 		this.parent = parent;
 		this.currentItem = item;

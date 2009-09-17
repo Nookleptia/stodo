@@ -9,7 +9,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
-import org.free.todolist.ListMainFrame;
 import org.free.todolist.data.UserSetting;
 import org.free.todolist.model.Preference;
 
@@ -45,7 +44,7 @@ public class PreferenceDialog extends JDialog{
     
     private UserSetting setting;
     
-    public PreferenceDialog(ListMainFrame parent, String title) {
+    public PreferenceDialog(MainFrame parent, String title) {
     	super(parent, title, true);
     	//this.parent = parent;
         initComponents();
