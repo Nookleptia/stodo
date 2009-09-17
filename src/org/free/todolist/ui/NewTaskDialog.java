@@ -17,7 +17,6 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import org.free.todolist.ListMainFrame;
 import org.free.todolist.data.DataKit;
 import org.free.todolist.model.TodoItem;
 
@@ -47,9 +46,9 @@ public class NewTaskDialog extends javax.swing.JDialog {
     private javax.swing.JTextField tfTimeout;
     
     
-    public ListMainFrame parent;
+    public MainFrame parent;
 
-    public NewTaskDialog(ListMainFrame parent, String title) {
+    public NewTaskDialog(MainFrame parent, String title) {
     	super(parent, title, true);
     	this.parent = parent;
         initComponents();
