@@ -16,6 +16,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -38,6 +40,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import org.free.todolist.data.TodoItemListBuilder;
@@ -80,26 +83,6 @@ public class ListMainFrame extends JFrame{
 	}
 
 	class ListItemListener extends MouseAdapter{
-		public void mouseEntered(MouseEvent e){
-			JList list = (JList)e.getSource();
-			int index = list.locationToIndex(e.getPoint());
-			if(index <= 0)return;
-			TodoItem item = (TodoItem)list.getModel().getElementAt(index);
-			String tooltip = 
-				"Desc : "+item.getDesc()+
-				", Status : "+item.getStatus()+
-				", Timeout:"+item.getTimeout();
-			list.setToolTipText(
-					"<html>"+tooltip+
-					"</html>"
-			);
-		}
-		
-		public void mouseExited(MouseEvent e){
-			JList list = (JList)e.getSource();
-			list.setToolTipText("");
-		}
-		
 		public void mouseClicked(MouseEvent e){
 			if(e.getClickCount() == 2){
 				JList list = (JList)e.getSource();
@@ -165,7 +148,7 @@ public class ListMainFrame extends JFrame{
 				if(JOptionPane.showConfirmDialog(
 						ListMainFrame.this, 
 						"Are you sure you want to delete item?", 
-						"??", 
+						"Confirm - sTodo", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION){
 					deleteItem(item);//not delete the item from database by now.	
 				}
@@ -184,6 +167,18 @@ public class ListMainFrame extends JFrame{
 			}
 		}
 	}
+    
+    private String formatTooltip(TodoItem item){
+    	StringBuffer formatted = new StringBuffer();
+    	
+    	formatted.append("<html>");
+    	formatted.append("<b>Description : </b>").append(item.getDesc()).append(", ");
+    	formatted.append("<b>Status : </b>").append(item.getStatus()).append(", ");
+    	formatted.append("<b>Timeout : </b>").append(item.getTimeout());
+    	formatted.append("</html>");
+
+    	return formatted.toString();
+    }
     
 	public void initUI(){
     	try{
@@ -270,6 +265,20 @@ public class ListMainFrame extends JFrame{
     	ftodolist.setCellRenderer(new TodoListCellRenderer());
     	ftodolist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     	JScrollPane sp = new JScrollPane(ftodolist);
+    	
+    	ToolTipManager.sharedInstance().registerComponent(ftodolist);
+    	
+    	ftodolist.addMouseMotionListener(new MouseMotionAdapter(){
+    		public void mouseMoved(MouseEvent e){
+    			JList list = (JList)e.getSource();
+    			int index = list.locationToIndex(e.getPoint());
+    			if(index <= 0)return;
+    			TodoItem item = (TodoItem)list.getModel().getElementAt(index);
+    			list.setToolTipText(null);
+    			String tooltip = formatTooltip(item);
+    			list.setToolTipText(tooltip);
+    		}
+    	});
     	
     	ftodolist.addMouseListener(new ListItemListener());
     	ftodolist.addMouseListener(popupListener);
