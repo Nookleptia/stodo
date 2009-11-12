@@ -38,7 +38,6 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
@@ -47,6 +46,8 @@ import org.free.todolist.export.Exporter;
 import org.free.todolist.export.HTMLExporter;
 import org.free.todolist.model.FilterableListModel;
 import org.free.todolist.model.TodoItem;
+import org.free.todolist.plugin.Plugin;
+import org.free.todolist.plugin.TodoPluginManager;
 
 /**
  * 
@@ -367,6 +368,9 @@ public class MainFrame extends JFrame{
     	
     	mbar.add(fileMenu);
     	mbar.add(editMenu);
+    	
+    	Plugin pMenuBar = TodoPluginManager.getInstance().getPlugin("menubar");
+    	pMenuBar.execute("_customizeMenuBar_", mbar);
     	
     	setJMenuBar(mbar);
     	

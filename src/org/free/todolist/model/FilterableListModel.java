@@ -9,13 +9,18 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+/**
+ * 
+ * @author juntao.qiu@gmail.com
+ *
+ */
 public class FilterableListModel extends AbstractListModel implements
 		DocumentListener {
 	private static final long serialVersionUID = -2409529218176332776L;
 	
-	List<Object> list;
-	List<Object> filteredList;
-	String lastFilter = "";
+	private List<Object> list;
+	private List<Object> filteredList;
+	private String lastFilter = "";
 
 	public FilterableListModel() {
 		list = new ArrayList<Object>();
@@ -46,7 +51,7 @@ public class FilterableListModel extends AbstractListModel implements
 		filter(lastFilter);
 	}
 	
-	void filter(String search) {
+	private void filter(String search) {
 		filteredList.clear();
 		for (Object element : list) {
 			if (element.toString().indexOf(search, 0) != -1) {
@@ -56,14 +61,13 @@ public class FilterableListModel extends AbstractListModel implements
 		fireContentsChanged(this, 0, getSize());
 	}
 
-	// DocumentListener Methods
 	public void insertUpdate(DocumentEvent event) {
 		Document doc = event.getDocument();
 		try {
 			lastFilter = doc.getText(0, doc.getLength());
 			filter(lastFilter);
-		} catch (BadLocationException ble) {
-			System.err.println("Bad location: " + ble);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -72,8 +76,8 @@ public class FilterableListModel extends AbstractListModel implements
 		try {
 			lastFilter = doc.getText(0, doc.getLength());
 			filter(lastFilter);
-		} catch (BadLocationException ble) {
-			System.err.println("Bad location: " + ble);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
 		}
 	}
 

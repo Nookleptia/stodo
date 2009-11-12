@@ -6,9 +6,13 @@ import javax.swing.ListModel;
 
 import org.free.todolist.model.FilterableListModel;
 
+/**
+ * 
+ * @author juntao.qiu@gmail.com
+ *
+ */
 public class FilterableList extends JList {
 	private static final long serialVersionUID = 2827679372675804255L;
-	private JTextField input;
 
 	public FilterableList() {
 		FilterableListModel model = new FilterableListModel();
@@ -16,30 +20,25 @@ public class FilterableList extends JList {
 	}
 
 	/**
-	 * Associates filtering document listener to text component.
+	 * register the search box on list
 	 */
 	public void installFilterField(JTextField input) {
 		if (input != null) {
-			this.input = input;
 			FilterableListModel model = (FilterableListModel) getModel();
 			input.getDocument().addDocumentListener(model);
 		}
 	}
 
 	/**
-	 * Disassociates filtering document listener from text component.
+	 * unregister the search box on list.
 	 */
 	public void uninstallFilterField(JTextField input) {
 		if (input != null) {
 			FilterableListModel model = (FilterableListModel) getModel();
 			input.getDocument().removeDocumentListener(model);
-			this.input = null;
 		}
 	}
 
-	/**
-	 * Doesn't let model change to non-filtering variety
-	 */
 	public void setModel(ListModel model) {
 		if (!(model instanceof FilterableListModel)) {
 			throw new IllegalArgumentException();
@@ -48,9 +47,6 @@ public class FilterableList extends JList {
 		}
 	}
 
-	/**
-	 * Adds item to model of list
-	 */
 	public void addElement(Object element) {
 		((FilterableListModel) getModel()).addElement(element);
 	}
