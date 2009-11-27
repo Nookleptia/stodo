@@ -76,6 +76,31 @@ public class MainFrame extends JFrame{
 		super(title);
 	}
 
+	public FilterableList getTodoList(){
+		return ftodolist;
+	}
+	
+	public void setLookAndFeel(String lnf){
+		String className = UIManager.getCrossPlatformLookAndFeelClassName();
+		if(lnf.equalsIgnoreCase("windows")){
+			className = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
+		}else if(lnf.equalsIgnoreCase("metal")){
+			className = "javax.swing.plaf.metal.MetalLookAndFeel";
+		}else if(lnf.equalsIgnoreCase("motif")){
+			className = "com.sun.java.swing.plaf.motif.MotifLookAndFeel";
+		}else if(lnf.equalsIgnoreCase("system")){
+			className = UIManager.getSystemLookAndFeelClassName();
+		}else{
+			className = UIManager.getCrossPlatformLookAndFeelClassName();
+		}
+		
+    	try{
+    		UIManager.setLookAndFeel(className);
+    	}catch(Exception e){
+    		System.err.println(e.getMessage());
+    	}
+	}
+	
 	/**
 	 * quick edit on an item
 	 * @author juntao.qiu
@@ -188,12 +213,6 @@ public class MainFrame extends JFrame{
      * initialize the UI of sTodo, and bind event handlers then.
      */
 	public void initUI(){
-    	try{
-    		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    	}catch(Exception e){
-    		System.err.println(e.getMessage());
-    	}
-    	
     	JMenuItem delMenuItem = new JMenuItem("Delete item", new ImageIcon("imgs/delete.gif"));
     	JMenuItem editMenuItem = new JMenuItem("Edit item", new ImageIcon("imgs/edit2.gif"));
     	JMenuItem mailMenuItem = new JMenuItem("Mail this item", new ImageIcon("imgs/mail.gif"));
