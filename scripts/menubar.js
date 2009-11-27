@@ -16,6 +16,7 @@ function buildPluginMenu(){
 				var plFrame = new JFrame("plugins list");
 				var epNote = new JEditorPane();
 				var s = "";
+				pluginList = application.getPluginList();
 				for(var i = 0; i<pluginList.size();i++){
 					var pi = pluginList.get(i);
 					s += pi.getName()+":"+pi.getDescription()+"\n";
@@ -62,5 +63,5 @@ function buildHelpMenu(){
 //this function will be invoked from java code, MainFrame...
 function _customizeMenuBar_(menuBar){
 	menuBar.add(buildPluginMenu());
-	menuBar.add(buildHelpMenu());
+	//menuBar.add(buildHelpMenu());
 }
