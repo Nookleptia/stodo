@@ -9,7 +9,7 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.free.todolist.manager.AlermService;
+import org.free.todolist.manager.AlarmService;
 import org.free.todolist.model.TodoItem;
 
 public class DataService {
@@ -49,6 +49,12 @@ public class DataService {
 			pstat.setString(6, todo.getStatus());
 			
 			pstat.execute();
+			
+			ResultSet rs = pstat.getGeneratedKeys();
+			while(rs.next()){
+				int id = rs.getInt(1);
+				todo.setId(String.valueOf(id));
+			}
 			status = true;
 			
 			con.close();
@@ -56,9 +62,7 @@ public class DataService {
 			e.printStackTrace();
 			message = e.getMessage();
 			status = false;
-		}		
-		AlermService alerm = AlermService.getInstance();
-		alerm.addTodoItem(todo);
+		}
 		
 		return status;
 	}

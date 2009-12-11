@@ -497,15 +497,22 @@ public class MainFrame extends JFrame{
 	public void deleteItem(TodoItem item){
 		FilterableListModel model = ftodolist.getContents();
 		
-		DataService ds = DataService.getInstance();
-		ds.removeItem(item);
-		
 		for(int i = 0;i < model.getSize();i++){
 			TodoItem titem = (TodoItem)model.getElementAt(i);
 			if(titem.getId().equals(item.getId())){
 				model.removeElement(i);
 				break;
 			}
+		}
+		
+		DataService ds = DataService.getInstance();
+		boolean s = ds.removeItem(item);
+		if(s){
+			JOptionPane.showMessageDialog(null, 
+					"Task is deleted", "Success", JOptionPane.INFORMATION_MESSAGE);
+		}else{
+			JOptionPane.showMessageDialog(null, 
+					"Something is wrong", ds.getMessage(), JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	

@@ -18,6 +18,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 import org.free.todolist.data.DataService;
+import org.free.todolist.manager.AlarmService;
 import org.free.todolist.model.TodoItem;
 
 /**
@@ -206,6 +207,8 @@ public class NewTaskDialog extends javax.swing.JDialog {
 							"New task inserted", "Success", JOptionPane.INFORMATION_MESSAGE);
 					NewTaskDialog.this.parent.updateList(data);
 					NewTaskDialog.this.setVisible(false);
+					AlarmService as = AlarmService.getInstance();
+					as.addTodoItem(data);
 				}else{
 					JOptionPane.showMessageDialog(null, 
 							"Something is wrong", ds.getMessage(), JOptionPane.ERROR_MESSAGE);
