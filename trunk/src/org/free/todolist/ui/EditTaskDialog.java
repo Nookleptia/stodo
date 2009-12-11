@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import org.free.todolist.data.DataKit;
+import org.free.todolist.data.DataService;
 import org.free.todolist.model.TodoItem;
 
 public class EditTaskDialog extends javax.swing.JDialog{
@@ -182,8 +182,8 @@ public class EditTaskDialog extends javax.swing.JDialog{
 				data.setPeriod(tfPeriod.getText());
 				data.setNote(epNote.getText());
 				
-				DataKit dt = new DataKit();
-				boolean s = dt.updateItem(data);
+				DataService ds = DataService.getInstance();
+				boolean s = ds.updateItem(data);
 				if(s){
 					JOptionPane.showMessageDialog(null, 
 							"New task inserted", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -191,7 +191,7 @@ public class EditTaskDialog extends javax.swing.JDialog{
 					EditTaskDialog.this.setVisible(false);
 				}else{
 					JOptionPane.showMessageDialog(null, 
-							"Something is wrong", dt.getMessage(), JOptionPane.ERROR_MESSAGE);
+							"Something is wrong", ds.getMessage(), JOptionPane.ERROR_MESSAGE);
 				}
 			}
         	
