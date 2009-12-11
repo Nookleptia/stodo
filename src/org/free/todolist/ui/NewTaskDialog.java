@@ -200,7 +200,7 @@ public class NewTaskDialog extends javax.swing.JDialog {
 				data.setNote(epNote.getText());
 				
 				DataKit dt = new DataKit();
-				boolean s = dt.submitNewTask(data);
+				boolean s = dt.addItem(data);
 				if(s){
 					JOptionPane.showMessageDialog(null, 
 							"New task inserted", "Success", JOptionPane.INFORMATION_MESSAGE);
