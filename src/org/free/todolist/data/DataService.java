@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.free.todolist.manager.AlermService;
 import org.free.todolist.model.TodoItem;
 
 public class DataService {
@@ -56,6 +57,9 @@ public class DataService {
 			message = e.getMessage();
 			status = false;
 		}		
+//		AlermService alerm = AlermService.getInstance();
+//		alerm.addTodoItem(todo);
+		
 		return status;
 	}
 	
