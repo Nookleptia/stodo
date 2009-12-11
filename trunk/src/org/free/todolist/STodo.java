@@ -23,7 +23,7 @@ public class STodo {
 	public STodo(MainFrame frame){
 		this.mainFrame = frame;
 	}
-	
+
 	public void initEnv(){
 		PluginManager pManager = TodoPluginManager.getInstance();
 		Plugin system = 
