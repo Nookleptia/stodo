@@ -1,5 +1,4 @@
 /**
- * Copyright (c) Jinfonet Inc. 2000-2009, All rights reserved. 
  * 
  * File: ExcelExporter.java
  * Create: Sep 11, 2009
@@ -10,7 +9,7 @@ import java.io.IOException;
 
 /**
  *
- * @author juntao.qiu@china.jinfonet.com
+ * @author juntao.qiu@gmail.com
  *
  */
 public class ExcelExporter implements Exporter {
