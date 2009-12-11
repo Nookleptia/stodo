@@ -6,7 +6,7 @@ importClass(java.lang.reflect.Constructor)
 function buildPluginMenu(){
 	var menuPlugin = new JMenu();
 	menuPlugin.setText("Plugin");
-	
+	menuPlugin.setIcon(new ImageIcon("imgs/plugin.png"));
 	var menuItemListPlugin = new JMenuItem();
 	menuItemListPlugin.setText("list plugins");
 	menuItemListPlugin.addActionListener(
