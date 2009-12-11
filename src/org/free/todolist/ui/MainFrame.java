@@ -41,6 +41,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
+import org.free.todolist.data.DataService;
 import org.free.todolist.data.TodoItemListBuilder;
 import org.free.todolist.export.Exporter;
 import org.free.todolist.export.HTMLExporter;
@@ -495,6 +496,9 @@ public class MainFrame extends JFrame{
 	 */
 	public void deleteItem(TodoItem item){
 		FilterableListModel model = ftodolist.getContents();
+		
+		DataService ds = DataService.getInstance();
+		ds.removeItem(item);
 		
 		for(int i = 0;i < model.getSize();i++){
 			TodoItem titem = (TodoItem)model.getElementAt(i);
