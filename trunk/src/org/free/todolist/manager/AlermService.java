@@ -42,8 +42,9 @@ public class AlermService {
 			JOptionPane.showMessageDialog(
 					null, 
 					item.getDesc(), 
-					"Task need to do now!!", 
+					"sTodo - Task need to do now!!", 
 					JOptionPane.INFORMATION_MESSAGE);
+			item.setStatus("finished");
 		}
 
 		public String getId() {
