@@ -186,7 +186,7 @@ public class EditTaskDialog extends javax.swing.JDialog{
 				boolean s = ds.updateItem(data);
 				if(s){
 					JOptionPane.showMessageDialog(null, 
-							"New task inserted", "Success", JOptionPane.INFORMATION_MESSAGE);
+							"Edit on task is saved", "Success", JOptionPane.INFORMATION_MESSAGE);
 					EditTaskDialog.this.parent.updateList(data);
 					EditTaskDialog.this.setVisible(false);
 				}else{
