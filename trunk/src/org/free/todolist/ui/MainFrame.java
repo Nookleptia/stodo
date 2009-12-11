@@ -325,7 +325,7 @@ public class MainFrame extends JFrame{
 			}
     	});
     	
-    	JMenuItem exit = new JMenuItem("Exit", new ImageIcon("imgs/close.gif"));
+    	JMenuItem exit = new JMenuItem("Exit", new ImageIcon("imgs/Exit.png"));
     	exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_MASK));
     	exit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
