@@ -1,5 +1,4 @@
 /**
- * Copyright (c) Jinfonet Inc. 2000-2009, All rights reserved. 
  * 
  * File: HTMLExporter.java
  * Create: Sep 11, 2009
@@ -14,7 +13,7 @@ import org.free.todolist.model.TodoItem;
 
 /**
  *
- * @author juntao.qiu@china.jinfonet.com
+ * @author juntao.qiu@gmail.com
  *
  */
 public class HTMLExporter implements Exporter {
