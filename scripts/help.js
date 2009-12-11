@@ -1,3 +1,3 @@
-function _help_(){
-	print("this is help");
-}
+(function(){
+	println("This is help plugin, execute by it self");
+})();
