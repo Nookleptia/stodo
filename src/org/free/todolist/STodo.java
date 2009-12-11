@@ -2,7 +2,6 @@ package org.free.todolist;
 
 import java.util.List;
 
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.free.todolist.plugin.Plugin;
@@ -48,7 +47,11 @@ public class STodo {
 	}
 	
 	public void launch(){
-		mainFrame.initUI();
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run() {
+				mainFrame.initUI();
+			}
+		});
 	}
 	
 	public static void main(String[] args){
