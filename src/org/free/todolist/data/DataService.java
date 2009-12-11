@@ -57,8 +57,8 @@ public class DataService {
 			message = e.getMessage();
 			status = false;
 		}		
-//		AlermService alerm = AlermService.getInstance();
-//		alerm.addTodoItem(todo);
+		AlermService alerm = AlermService.getInstance();
+		alerm.addTodoItem(todo);
 		
 		return status;
 	}
