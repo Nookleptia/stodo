@@ -183,7 +183,7 @@ public class EditTaskDialog extends javax.swing.JDialog{
 				data.setNote(epNote.getText());
 				
 				DataKit dt = new DataKit();
-				boolean s = dt.updateExistTask(data);
+				boolean s = dt.updateItem(data);
 				if(s){
 					JOptionPane.showMessageDialog(null, 
 							"New task inserted", "Success", JOptionPane.INFORMATION_MESSAGE);
