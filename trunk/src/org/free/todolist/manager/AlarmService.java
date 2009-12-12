@@ -1,10 +1,13 @@
 package org.free.todolist.manager;
 
-import javax.swing.JOptionPane;
-
 import org.free.todolist.model.TodoItem;
 import org.free.todolist.ui.AlarmDialog;
 
+/**
+ * 
+ * @author juntao.qiu@gmail.com
+ *
+ */
 public class AlarmService {
 	private AlarmService(){
 		taskMgr = TaskManager.getInstance();
