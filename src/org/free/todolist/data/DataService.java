@@ -9,9 +9,16 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.free.todolist.manager.AlarmService;
 import org.free.todolist.model.TodoItem;
 
+/**
+ * This is the data-service of <code>sTodo</code>, it provides
+ * operations on data such as insert, update, delete, and search
+ * it a single instance in this <code>sTodo</code>application.
+ * 
+ * @author juntao.qiu@gmail.com
+ *
+ */
 public class DataService {
 	private String message;
 	private boolean status;
@@ -36,6 +43,12 @@ public class DataService {
 		return instance;
 	}
 	
+	/**
+	 * insert new <code>TodoItem</code> in to database <code>stodoitem</code>
+	 * 
+	 * @param todo the entity of a todo-bean
+	 * @return status of whether the operation is success or faild.
+	 */
 	public boolean addItem(TodoItem todo){
 		String query = "INSERT INTO stodoitem (type, desc, timeout, period, note, status) VALUES (?, ?, ?, ?, ?, ?)";
 		try {
@@ -67,6 +80,12 @@ public class DataService {
 		return status;
 	}
 	
+	/**
+	 * remove <code>TodoItem</code> entity from database
+	 * 
+	 * @param todo todo-item entity
+	 * @return
+	 */
 	public boolean removeItem(TodoItem todo){
 		String query = "DELETE FROM stodoitem WHERE itemid="+todo.getId();
 		try{
@@ -84,6 +103,11 @@ public class DataService {
 		return status;
 	}
 	
+	/**
+	 * update all fields of a <code>todoitem</code> in database.
+	 * @param todo
+	 * @return
+	 */
 	public boolean updateItem(TodoItem todo){
 		String query = "UPDATE stodoitem SET type=?, desc=?, timeout=?, period=?, note=?, status=? WHERE itemid="+todo.getId();
 		try{
@@ -109,6 +133,14 @@ public class DataService {
 		return status;
 	}
 	
+	/**
+	 * search the database, by <code>by</code> (which is the column name in database),
+	 * and value, the real text like 123, tomorrow, etc.
+	 * 
+	 * @param by the column in database
+	 * @param value the value of the column
+	 * @return
+	 */
 	public List<TodoItem> searchList(String by, String value){
 		List<TodoItem> list = new LinkedList<TodoItem>();
 		String query = "SELECT itemid, type, desc, timeout, period, status, note FROM stodoitem WHERE "+by+" LIKE \""+value+"\"";
@@ -138,6 +170,10 @@ public class DataService {
 		return list;
 	}
 	
+	/**
+	 * get error message
+	 * @return null if no error, the error message otherwise
+	 */
 	public String getMessage(){
 		return message;
 	}
