@@ -102,7 +102,7 @@ public class NewTaskDialog extends javax.swing.JDialog {
         labPeriod.setText("Period:"); // NOI18N
         labPeriod.setName("labPeriod"); // NOI18N
 
-        tfPeriod.setText("every Sunday afternoon"); // NOI18N
+        tfPeriod.setText("never"); // NOI18N
         tfPeriod.setName("tfPeriod"); // NOI18N
 
         labStatus.setText("Status"); // NOI18N
