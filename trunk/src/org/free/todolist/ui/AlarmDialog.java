@@ -79,6 +79,7 @@ public class AlarmDialog extends JDialog{
             
             radioFinished.setSelected(true);
 
+            labTodoItem.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
             labTodoItem.setText(tip); // NOI18N
             labTodoItem.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
             labTodoItem.setName("labTodoItem"); // NOI18N
@@ -156,7 +157,7 @@ public class AlarmDialog extends JDialog{
 					}else if(radioCancelled.isSelected()){
 						status = "cancelled";
 					}
-					//parent.updateTodoItemStatus(status);
+
 					TodoItem item = parent.getTodoItem();
 					item.setStatus(status);
 					DataService ds = DataService.getInstance();
@@ -181,5 +182,20 @@ public class AlarmDialog extends JDialog{
         private javax.swing.JRadioButton radioNew;
         private javax.swing.JRadioButton radioPending;
         private javax.swing.ButtonGroup radiosGroup;	
+    }
+    
+    public static void main(String[] args){
+    	TodoItem item = new TodoItem();
+    	item.setId("id");
+    	item.setDesc("desc");
+    	item.setNote("note");
+    	item.setPeriod("none");
+    	item.setStatus("new");
+    	item.setTimeout("timeout");
+    	item.setType("node");
+    	
+    	AlarmDialog dialog = new AlarmDialog(item);
+    	dialog.setSize(386, 200);
+    	dialog.setVisible(true);
     }
 }
