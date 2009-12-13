@@ -1,5 +1,7 @@
 package org.free.todolist.manager;
 
+import javax.swing.JDialog;
+
 import org.free.todolist.model.TodoItem;
 import org.free.todolist.ui.AlarmDialog;
 
@@ -44,6 +46,7 @@ public class AlarmService {
 		
 		public void execute(){
 			AlarmDialog dialog = new AlarmDialog(item);
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setAlwaysOnTop(true);
 			dialog.setLocationRelativeTo(null);
 			dialog.setSize(386, 160);
