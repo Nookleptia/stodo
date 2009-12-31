@@ -13,6 +13,8 @@ package org.free.todolist.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DateFormat;
+import java.util.Date;
 
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -96,7 +98,8 @@ public class NewTaskDialog extends javax.swing.JDialog {
         labTimeout.setText("Timeout:"); // NOI18N
         labTimeout.setName("labTimeout"); // NOI18N
 
-        tfTimeout.setText("4pm"); // NOI18N
+        Date now = new Date();
+        tfTimeout.setText(DateFormat.getDateTimeInstance().format(now)); // NOI18N
         tfTimeout.setName("tfTimeout"); // NOI18N
 
         labPeriod.setText("Period:"); // NOI18N
