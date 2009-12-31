@@ -1,5 +1,9 @@
 package org.free.todolist.manager;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
+
 import javax.swing.JDialog;
 
 import org.free.todolist.model.TodoItem;
@@ -29,7 +33,21 @@ public class AlarmService {
 	
 	public void addTodoItem(TodoItem item){
 		Task nt = new Alert(item);
-		taskMgr.scheduleTask(nt, 10000);
+		long now = System.currentTimeMillis();
+		long timeout = convert(item.getTimeout());
+		taskMgr.scheduleTask(nt, (timeout-now));
+	}
+	
+	private long convert(String timeout){
+	    long later = 0L;
+	    DateFormat format = DateFormat.getDateTimeInstance();
+	    try {
+            later = format.parse(timeout).getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        
+	    return later;
 	}
 	
 	public void cancelAlert(TodoItem item){
