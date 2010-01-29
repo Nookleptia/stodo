@@ -62,21 +62,62 @@ import org.free.todolist.plugin.TodoPluginManager;
 public class MainFrame extends JFrame{
 	private static final long serialVersionUID = 320412556766404024L;
 	
+	//new task dialog, used to add task
 	private NewTaskDialog newTaskDialog;
+	
+	//preference dialog, used to configure user-preference
 	private PreferenceDialog preferenceDialog;
 	
+	//system tray icon
 	private TrayIcon trayIcon;
 	
+	//system tray
 	private SystemTray systemTray;
 	
+	//pop-up menu
 	private JPopupMenu pmOnItem;
 	
+	//menu-bar of the frame
+	private JMenuBar mbar;
+	
+	//tool-bar of the frame
+	private JToolBar toolbar;
+	
+	//the search-box on tool-bar
+	private JTextField filter;
+	
+	//the filter-able list, this is the main content of sTodo
 	private FilterableList ftodolist;
+	
+	//scroller of list panel
+	private JScrollPane scroller;
+	
+	//pop-up listener,
+	private MouseListener popupListener;
+	
+	//open the frame, which can be accessed from outside of the frame
 	
 	public MainFrame(String title){
 		super(title);
+		initUI();
+	}
+	
+	public JMenuBar getMenubar(){
+	    return mbar;
 	}
 
+	public JFrame getFrame(){
+	    return this;
+	}
+	
+	public JToolBar getToolbar(){
+	    return toolbar;
+	}
+	
+	public JTextField getFilter(){
+	    return filter;
+	}
+	
 	public FilterableList getTodoList(){
 		return ftodolist;
 	}
@@ -210,256 +251,271 @@ public class MainFrame extends JFrame{
     	return formatted.toString();
     }
     
+    private void initContentList(){
+        TodoItemListBuilder builder = new TodoItemListBuilder();
+        List<TodoItem> tlist = builder.getTodoItems();
+        
+        ftodolist = new FilterableList();
+        for(TodoItem item : tlist){
+            ftodolist.addElement(item);
+        }
+        
+        ftodolist.setCellRenderer(new TodoListCellRenderer());
+        ftodolist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        scroller = new JScrollPane(ftodolist);
+        
+        ToolTipManager.sharedInstance().registerComponent(ftodolist);
+        
+        ftodolist.addMouseMotionListener(new MouseMotionAdapter(){
+            public void mouseMoved(MouseEvent e){
+                JList list = (JList)e.getSource();
+                int index = list.locationToIndex(e.getPoint());
+                if(index <= 0)return;
+                TodoItem item = (TodoItem)list.getModel().getElementAt(index);
+                list.setToolTipText(null);
+                String tooltip = formatTooltip(item);
+                list.setToolTipText(tooltip);
+            }
+        });
+        
+        ftodolist.addMouseListener(new ListItemListener());
+        ftodolist.addMouseListener(popupListener);
+    }
+    
+    private void initSearchBox(){
+        toolbar = new JToolBar();
+        filter = new JTextField();
+        ftodolist.installFilterField(filter);
+        toolbar.add(filter, BorderLayout.CENTER);
+        toolbar.setVisible(false);
+        
+        /*
+         * add keyboard shortcuts :
+         * Ctrl + F : search ...
+         * Slash '/': search ...
+         */
+        KeyListener searchTrigger = new KeyListener(){
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_F &&
+                        e.getModifiers() == KeyEvent.CTRL_MASK || 
+                        e.getKeyCode() == KeyEvent.VK_SLASH){
+                    if(toolbar.isVisible()){
+                        toolbar.setVisible(false);
+                    }else{
+                        toolbar.setVisible(true);
+                        filter.requestFocus();
+                    }
+                }
+            }
+
+            public void keyReleased(KeyEvent e) {}
+
+            public void keyTyped(KeyEvent e) {}
+        };
+        
+        /*
+         * Escape : hide the search panel
+         */
+        KeyListener escapeTrigger = new KeyListener(){
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
+                    if(toolbar.isVisible()){
+                        filter.setText("");
+                        toolbar.setVisible(false);
+                        MainFrame.this.requestFocus();
+                    }
+                }
+            }
+
+            public void keyReleased(KeyEvent e) {}
+
+            public void keyTyped(KeyEvent e) {}
+        };
+        
+        filter.addKeyListener(escapeTrigger);
+        
+        addKeyListener(searchTrigger);
+        ftodolist.addKeyListener(searchTrigger);
+    }
+    
+    private void initMenuBar(){
+        mbar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.setIcon(new ImageIcon("imgs/file.gif"));
+        JMenuItem newTask = new JMenuItem("New task", new ImageIcon("imgs/schedule_new.gif"));
+        newTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
+        newTask.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                if(newTaskDialog == null){
+                    newTaskDialog = new NewTaskDialog(MainFrame.this, "New Task");
+                }
+                newTaskDialog.setLocationRelativeTo(null);
+                newTaskDialog.setVisible(true);
+            }
+        });
+        
+        JMenuItem exit = new JMenuItem("Exit", new ImageIcon("imgs/Exit.png"));
+        exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_MASK));
+        exit.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                int y = JOptionPane.showConfirmDialog(
+                        null, 
+                        "Confirm exit", 
+                        "Confirm Exit Dialog", 
+                        JOptionPane.YES_NO_OPTION);
+                if(y == JOptionPane.YES_OPTION){
+                    System.exit(0);
+                }
+            }
+            
+        });
+        
+        JMenu export = new JMenu("Export...");
+        export.setIcon(new ImageIcon("imgs/export.gif"));
+        
+        JMenuItem exportText = new JMenuItem("Export Text", new ImageIcon("imgs/exptotext.gif"));
+        JMenuItem exportExcel = new JMenuItem("Export Excel", new ImageIcon("imgs/exptoexcel.gif"));
+        JMenuItem exportHtml = new JMenuItem("Export HTML", new ImageIcon("imgs/exptohtml.gif"));
+        
+        exportHtml.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                List<TodoItem> list = new LinkedList<TodoItem>();
+                for(int i = 0;i < ftodolist.getContents().getSize();i++){
+                    list.add((TodoItem)ftodolist.getContents().getElementAt(i));
+                }
+                Exporter exporter = new HTMLExporter(list, "temp.html");
+                exporter.store();
+            }
+        });
+        
+        export.add(exportText);
+        export.add(exportExcel);
+        export.add(exportHtml);
+        
+        fileMenu.add(newTask);
+        fileMenu.add(export);
+        fileMenu.add(exit);
+        
+        JMenu editMenu = new JMenu("Edit");
+        editMenu.setIcon(new ImageIcon("imgs/edit.gif"));
+        
+        JMenuItem settings = new JMenuItem("Preference", new ImageIcon("imgs/customize.gif"));
+        settings.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK));
+        
+        settings.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                if(preferenceDialog == null){
+                    preferenceDialog = new PreferenceDialog(MainFrame.this, "Preference");
+                }
+                preferenceDialog.setLocationRelativeTo(null);
+                preferenceDialog.setVisible(true);
+            }
+        });
+        
+        editMenu.add(settings);
+        //editMenu.addSeparator();
+        
+        JMenuItem search = new JMenuItem("Search", new ImageIcon("imgs/filter.gif"));
+        search.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK));
+        search.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                toolbar.setVisible(true);
+            }
+        });
+        
+        editMenu.add(search, 0);
+        
+        mbar.add(fileMenu);
+        mbar.add(editMenu);
+        
+        Plugin pMenuBar = TodoPluginManager.getInstance().getPlugin("menubar");
+        pMenuBar.execute("_customizeMenuBar_", mbar);
+        
+        setJMenuBar(mbar);        
+    }
+    
+    private void initPopupMenu(){
+        JMenuItem delMenuItem = new JMenuItem("Delete item", new ImageIcon("imgs/delete.gif"));
+        JMenuItem editMenuItem = new JMenuItem("Edit item", new ImageIcon("imgs/edit2.gif"));
+        JMenuItem mailMenuItem = new JMenuItem("Mail this item", new ImageIcon("imgs/mail.gif"));
+        JMenuItem helpMenuItem = new JMenuItem("Get help", new ImageIcon("imgs/help.gif"));
+        
+        pmOnItem = new JPopupMenu("Edit menu");
+        pmOnItem.addSeparator();
+        pmOnItem.add(delMenuItem);
+        pmOnItem.add(editMenuItem);
+        pmOnItem.add(mailMenuItem);
+        pmOnItem.addSeparator();
+        pmOnItem.add(helpMenuItem);
+        
+        popupListener = new PopupListener(pmOnItem);
+    }
+    
+    private void initSystemTray(){
+        systemTray = SystemTray.getSystemTray();
+        try {
+            trayIcon = new TrayIcon(ImageIO.read(new File("imgs/icon.png")));
+            systemTray.add(trayIcon);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+
+        addWindowListener(new WindowAdapter() {
+            public void windowIconified(WindowEvent e) {
+                dispose();
+            }
+        });
+
+        trayIcon.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2)
+                    setExtendedState(NORMAL);
+                setVisible(true);
+            }
+        });
+        
+        trayIcon.setToolTip("Simple todo manager");
+        
+        PopupMenu popup = new PopupMenu("sTodo");
+        MenuItem iexit = new MenuItem("Exit");
+        iexit.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                int y = JOptionPane.showConfirmDialog(
+                        null, 
+                        "Confirm exit", 
+                        "Confirm Exit Dialog", 
+                        JOptionPane.YES_NO_OPTION);
+                if(y == JOptionPane.YES_OPTION){System.exit(0);}
+            }
+        });
+        
+        MenuItem show = new MenuItem("Show");
+        show.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                setExtendedState(NORMAL);
+                setVisible(true);
+            }
+        });
+        
+        popup.add(iexit);
+        popup.add(show);
+        
+        trayIcon.setPopupMenu(popup);
+    } 
     /**
      * initialize the UI of sTodo, and bind event handlers then.
      */
 	public void initUI(){
-    	JMenuItem delMenuItem = new JMenuItem("Delete item", new ImageIcon("imgs/delete.gif"));
-    	JMenuItem editMenuItem = new JMenuItem("Edit item", new ImageIcon("imgs/edit2.gif"));
-    	JMenuItem mailMenuItem = new JMenuItem("Mail this item", new ImageIcon("imgs/mail.gif"));
-    	JMenuItem helpMenuItem = new JMenuItem("Get help", new ImageIcon("imgs/help.gif"));
-    	
-    	pmOnItem = new JPopupMenu("Edit menu");
-    	pmOnItem.addSeparator();
-    	pmOnItem.add(delMenuItem);
-    	pmOnItem.add(editMenuItem);
-    	pmOnItem.add(mailMenuItem);
-    	pmOnItem.addSeparator();
-    	pmOnItem.add(helpMenuItem);
-    	
-    	MouseListener popupListener = new PopupListener(pmOnItem);
-    	
-    	systemTray = SystemTray.getSystemTray();
-		try {
-			trayIcon = new TrayIcon(ImageIO.read(new File("imgs/icon.png")));
-			systemTray.add(trayIcon);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (AWTException e) {
-			e.printStackTrace();
-		}
-
-		addWindowListener(new WindowAdapter() {
-			public void windowIconified(WindowEvent e) {
-				dispose();
-			}
-		});
-
-		trayIcon.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2)
-					setExtendedState(NORMAL);
-				setVisible(true);
-			}
-		});
-		
-		trayIcon.setToolTip("Simple todo manager");
-		
-		PopupMenu popup = new PopupMenu("sTodo");
-		MenuItem iexit = new MenuItem("Exit");
-		iexit.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				int y = JOptionPane.showConfirmDialog(
-						null, 
-						"Confirm exit", 
-						"Confirm Exit Dialog", 
-						JOptionPane.YES_NO_OPTION);
-				if(y == JOptionPane.YES_OPTION){System.exit(0);}
-			}
-		});
-		
-		MenuItem show = new MenuItem("Show");
-		show.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				setExtendedState(NORMAL);
-				setVisible(true);
-			}
-		});
-		
-		popup.add(iexit);
-		popup.add(show);
-		
-		trayIcon.setPopupMenu(popup);
-		
-    	TodoItemListBuilder builder = new TodoItemListBuilder();
-    	List<TodoItem> tlist = builder.getTodoItems();
-    	
-    	ftodolist = new FilterableList();
-    	for(TodoItem item : tlist){
-    		ftodolist.addElement(item);
-    	}
-    	
-    	ftodolist.setCellRenderer(new TodoListCellRenderer());
-    	ftodolist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    	JScrollPane sp = new JScrollPane(ftodolist);
-    	
-    	ToolTipManager.sharedInstance().registerComponent(ftodolist);
-    	
-    	ftodolist.addMouseMotionListener(new MouseMotionAdapter(){
-    		public void mouseMoved(MouseEvent e){
-    			JList list = (JList)e.getSource();
-    			int index = list.locationToIndex(e.getPoint());
-    			if(index <= 0)return;
-    			TodoItem item = (TodoItem)list.getModel().getElementAt(index);
-    			list.setToolTipText(null);
-    			String tooltip = formatTooltip(item);
-    			list.setToolTipText(tooltip);
-    		}
-    	});
-    	
-    	ftodolist.addMouseListener(new ListItemListener());
-    	ftodolist.addMouseListener(popupListener);
-    	
-    	JMenuBar mbar = new JMenuBar();
-    	JMenu fileMenu = new JMenu("File");
-    	fileMenu.setIcon(new ImageIcon("imgs/file.gif"));
-    	JMenuItem newTask = new JMenuItem("New task", new ImageIcon("imgs/schedule_new.gif"));
-    	newTask.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
-    	newTask.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				if(newTaskDialog == null){
-					newTaskDialog = new NewTaskDialog(MainFrame.this, "New Task");
-				}
-				newTaskDialog.setLocationRelativeTo(null);
-				newTaskDialog.setVisible(true);
-			}
-    	});
-    	
-    	JMenuItem exit = new JMenuItem("Exit", new ImageIcon("imgs/Exit.png"));
-    	exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_MASK));
-    	exit.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				int y = JOptionPane.showConfirmDialog(
-						null, 
-						"Confirm exit", 
-						"Confirm Exit Dialog", 
-						JOptionPane.YES_NO_OPTION);
-				if(y == JOptionPane.YES_OPTION){
-					System.exit(0);
-				}
-			}
-    		
-    	});
-    	
-    	JMenu export = new JMenu("Export...");
-    	export.setIcon(new ImageIcon("imgs/export.gif"));
-    	
-    	JMenuItem exportText = new JMenuItem("Export Text", new ImageIcon("imgs/exptotext.gif"));
-    	JMenuItem exportExcel = new JMenuItem("Export Excel", new ImageIcon("imgs/exptoexcel.gif"));
-    	JMenuItem exportHtml = new JMenuItem("Export HTML", new ImageIcon("imgs/exptohtml.gif"));
-    	
-    	exportHtml.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				List<TodoItem> list = new LinkedList<TodoItem>();
-				for(int i = 0;i < ftodolist.getContents().getSize();i++){
-					list.add((TodoItem)ftodolist.getContents().getElementAt(i));
-				}
-				Exporter exporter = new HTMLExporter(list, "temp.html");
-				exporter.store();
-			}
-    	});
-    	
-    	export.add(exportText);
-    	export.add(exportExcel);
-    	export.add(exportHtml);
-    	
-    	fileMenu.add(newTask);
-    	fileMenu.add(export);
-    	fileMenu.add(exit);
-    	
-    	JMenu editMenu = new JMenu("Edit");
-    	editMenu.setIcon(new ImageIcon("imgs/edit.gif"));
-    	
-    	JMenuItem settings = new JMenuItem("Preference", new ImageIcon("imgs/customize.gif"));
-    	settings.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK));
-    	
-    	settings.addActionListener(new ActionListener(){
-    		public void actionPerformed(ActionEvent e){
-    			if(preferenceDialog == null){
-    				preferenceDialog = new PreferenceDialog(MainFrame.this, "Preference");
-    			}
-    			preferenceDialog.setLocationRelativeTo(null);
-    			preferenceDialog.setVisible(true);
-    		}
-    	});
-    	
-    	editMenu.add(settings);
-    	//editMenu.addSeparator();
-    	
-    	mbar.add(fileMenu);
-    	mbar.add(editMenu);
-    	
-    	Plugin pMenuBar = TodoPluginManager.getInstance().getPlugin("menubar");
-    	pMenuBar.execute("_customizeMenuBar_", mbar);
-    	
-    	setJMenuBar(mbar);
-    	
-    	final JToolBar toolbar = new JToolBar();
-    	final JTextField filter = new JTextField();
-    	ftodolist.installFilterField(filter);
-    	toolbar.add(filter, BorderLayout.CENTER);
-    	toolbar.setVisible(false);
-    	
-    	/*
-    	 * add keyboard shortcuts :
-    	 * Ctrl + F : search ...
-    	 * Slash '/': search ...
-    	 */
-    	KeyListener searchTrigger = new KeyListener(){
-			public void keyPressed(KeyEvent e) {
-    			if(e.getKeyCode() == KeyEvent.VK_F &&
-    					e.getModifiers() == KeyEvent.CTRL_MASK || e.getKeyCode() == KeyEvent.VK_SLASH){
-    				if(toolbar.isVisible()){
-    					toolbar.setVisible(false);
-    				}else{
-    					toolbar.setVisible(true);
-    					filter.requestFocus();
-    				}
-    			}
-			}
-
-			public void keyReleased(KeyEvent e) {}
-
-			public void keyTyped(KeyEvent e) {}
-    	};
-    	
-    	/*
-    	 * Escape : hide the search panel
-    	 */
-    	KeyListener escapeTrigger = new KeyListener(){
-			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
-					if(toolbar.isVisible()){
-						filter.setText("");
-						toolbar.setVisible(false);
-						MainFrame.this.requestFocus();
-					}
-				}
-			}
-
-			public void keyReleased(KeyEvent e) {}
-
-			public void keyTyped(KeyEvent e) {}
-    	};
-    	
-    	filter.addKeyListener(escapeTrigger);
-    	
-    	addKeyListener(searchTrigger);
-    	ftodolist.addKeyListener(searchTrigger);
-    	
-    	JMenuItem search = new JMenuItem("Search", new ImageIcon("imgs/filter.gif"));
-    	search.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK));
-    	search.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				toolbar.setVisible(true);
-			}
-    	});
-    	
-    	editMenu.add(search, 0);
-    	
+	    initSystemTray();
+	    initPopupMenu();
+	    initContentList();
+	    initMenuBar();
+	    initSearchBox();
+	    
     	getContentPane().add(toolbar, BorderLayout.NORTH);
-    	
-    	getContentPane().add(sp);
+    	getContentPane().add(scroller);
     	setSize(400, 650);
     	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     	setResizable(false);
@@ -528,5 +584,5 @@ public class MainFrame extends JFrame{
 			model.addElement(item);
 		}
 	}
-	
+
 }
