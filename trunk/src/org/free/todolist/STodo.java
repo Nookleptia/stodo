@@ -2,6 +2,7 @@ package org.free.todolist;
 
 import java.util.List;
 
+import javax.script.ScriptContext;
 import javax.swing.SwingUtilities;
 
 import org.free.todolist.plugin.Plugin;
@@ -31,6 +32,12 @@ public class STodo {
 			new TodoPlugin("scripts/menubar.js", "menubar", "application menubar");
 		pManager.install(system);
 		pManager.install(menubar);
+		
+		ScriptContext context = initContext();
+	}
+	
+	public ScriptContext initContext(){
+	    return null;
 	}
 	
 	public void activePlugin(String scriptFile){
