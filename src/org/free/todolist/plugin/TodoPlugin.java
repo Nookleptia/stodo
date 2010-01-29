@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
@@ -35,6 +36,10 @@ public class TodoPlugin implements Plugin {
 		}
 	}
 
+	public TodoPlugin(String file, ScriptContext context){
+	    
+	}
+	
 	public TodoPlugin(URL url) {
 
 	}
