@@ -20,8 +20,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 import org.free.todolist.data.DataService;
-import org.free.todolist.manager.AlarmService;
+import org.free.todolist.manager.TaskService;
 import org.free.todolist.model.TodoItem;
+import org.free.todolist.plugin.Plugin;
+import org.free.todolist.plugin.TodoPluginManager;
 
 /**
  *
@@ -199,7 +201,11 @@ public class NewTaskDialog extends javax.swing.JDialog {
 				data.setDesc(tfDesc.getText());
 				data.setType(cboxType.getSelectedItem().toString());
 				data.setStatus(cboxStatus.getSelectedItem().toString());
-				data.setTimeout(tfTimeout.getText());
+		    	
+				Plugin plUtil = TodoPluginManager.getInstance().getPlugin("util");
+		    	String date = (String)plUtil.execute("parseTimeout", tfTimeout.getText());
+		    	data.setTimeout(date);
+
 				data.setPeriod(tfPeriod.getText());
 				data.setNote(epNote.getText());
 				
@@ -208,10 +214,11 @@ public class NewTaskDialog extends javax.swing.JDialog {
 				if(s){
 					JOptionPane.showMessageDialog(null, 
 							"New task inserted", "Success", JOptionPane.INFORMATION_MESSAGE);
-					NewTaskDialog.this.parent.updateList(data);
+					//NewTaskDialog.this.parent.updateList(data);
+					NewTaskDialog.this.parent.refreshModel(ds.getAllItems());
 					NewTaskDialog.this.setVisible(false);
-					AlarmService as = AlarmService.getInstance();
-					as.addTodoItem(data);
+					TaskService as = TaskService.getInstance();
+					as.scheduleItem(data);
 				}else{
 					JOptionPane.showMessageDialog(null, 
 							"Something is wrong", ds.getMessage(), JOptionPane.ERROR_MESSAGE);
