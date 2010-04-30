@@ -21,6 +21,8 @@ function alert(message){
 
 }}}
 
+[http://stodo.googlecode.com/files/Alert.png]
+
 ==Log information on the console==
 {{{
 
@@ -52,6 +54,7 @@ function insertNewTodo(def){
 
 }}}
 
+[http://stodo.googlecode.com/files/newItem.png]
 ==Send a e-mail to friend==
 {{{
 
