@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 
 import org.free.todolist.data.SimpleTextMail;
 import org.free.todolist.mail.MailSender;
+import org.free.todolist.manager.TaskService;
 import org.free.todolist.model.TodoItem;
 
 public class NewMailDialog extends JDialog {
@@ -105,6 +106,11 @@ public class NewMailDialog extends JDialog {
 				stMail.setSubject(tfSubject.getText());
 				stMail.setContent(wrapMail(item));
 				
+				TaskService ts = TaskService.getInstance();
+				ts.sendMail(stMail);
+				NewMailDialog.this.setVisible(false);
+				
+				/*
 				MailSender sender = new MailSender(stMail);
 				boolean st = sender.send();
 				if(st){
@@ -112,7 +118,7 @@ public class NewMailDialog extends JDialog {
 							NewMailDialog.this, "mail is sent", "mail is sent!!", JOptionPane.INFORMATION_MESSAGE);
 					NewMailDialog.this.setVisible(false);
 				}
-				
+				*/
 			}
         });
         
