@@ -6,6 +6,11 @@ import org.free.todolist.data.SimpleTextMail;
 import org.free.todolist.data.UserSetting;
 import org.free.todolist.model.Preference;
 
+/**
+ * 
+ * @author juntao.qiu@gmail.com
+ *
+ */
 public class MailSender {
 	private UserSetting setting;
 	private SimpleTextMail mail;
@@ -32,7 +37,7 @@ public class MailSender {
 			}
 			String[] ccs = mail.getCcTo().split(";");
 			for(String cc : ccs){
-				email.addCc(cc, cc);
+				email.addCc(cc, cc.trim());
 			}
 			email.setFrom(preference.getUsername());
 			email.setSubject(mail.getSubject());
