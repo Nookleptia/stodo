@@ -7,6 +7,9 @@ import javax.swing.ListModel;
 import org.free.todolist.model.FilterableListModel;
 
 /**
+ * This is a filterable list which extends from JList, and its
+ * datamodel is from FilterableListModel. Just like JList, it is
+ * using the MVC model as Swing does.
  * 
  * @author juntao.qiu@gmail.com
  *
