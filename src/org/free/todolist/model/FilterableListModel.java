@@ -10,6 +10,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 /**
+ * This is the datamodel of the filterable-list, the items in the list
+ * can be searched by key-down event
  * 
  * @author juntao.qiu@gmail.com
  *
@@ -51,6 +53,10 @@ public class FilterableListModel extends AbstractListModel implements
 		filter(lastFilter);
 	}
 	
+	/*
+	 * search the list, compare two string, indexOf will return 
+	 * the index, if != -1, then added it into filtered-list.
+	 */
 	private void filter(String search) {
 		filteredList.clear();
 		for (Object element : list) {
