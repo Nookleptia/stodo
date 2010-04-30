@@ -3,6 +3,7 @@ package org.free.todolist.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
@@ -10,6 +11,7 @@ import org.free.todolist.data.DataService;
 import org.free.todolist.model.TodoItem;
 
 public class AlarmDialog extends JDialog{
+	private static final long serialVersionUID = 7752112784554536906L;
 	private TodoItem dataModel;
 	
     public AlarmDialog(TodoItem item) {
@@ -31,16 +33,16 @@ public class AlarmDialog extends JDialog{
     	StringBuffer formatted = new StringBuffer();
     	
     	formatted.append("<html>");
-    	formatted.append("<b>Description : </b>").append(item.getDesc()).append(", ");
-    	formatted.append("<b>Status : </b>").append(item.getStatus()).append(", ");
-    	formatted.append("<b>Timeout : </b>").append(item.getTimeout());
+    	formatted.append("<b>Description : </b>").append(item.getDesc()).append(", <br/>");
+    	formatted.append("<b>Status : </b>").append(item.getStatus()).append(", <br/>");
+    	formatted.append("<b>Timeout : </b>").append(item.getTimeout()).append("<br/>");
     	formatted.append("</html>");
 
     	return formatted.toString();
     }
     
     private void initComponents(){
-    	setTitle("todo item : "+dataModel.getId());
+    	setTitle("todo item : "+dataModel.getDesc());
     	String t = formatTooltip(dataModel);
     	AlarmPanel panel = new AlarmPanel(this, t);
     	add(panel);
@@ -51,7 +53,8 @@ public class AlarmDialog extends JDialog{
     }
     
     class AlarmPanel extends JPanel{
-    	private AlarmDialog parent;
+		private static final long serialVersionUID = 8289268785003213308L;
+		private AlarmDialog parent;
     	private String tip;
     	
     	public AlarmPanel(AlarmDialog dialog, String t){
@@ -96,10 +99,12 @@ public class AlarmDialog extends JDialog{
             radioCancelled.setText("Cancelled"); // NOI18N
             radioCancelled.setName("radioCancelled"); // NOI18N
 
-            btnOkay.setText("okay"); // NOI18N
+            btnOkay.setIcon(new ImageIcon("imgs/icon.png"));
+            btnOkay.setText("Okay"); // NOI18N
             btnOkay.setName("btnOkay"); // NOI18N
 
-            btnCancel.setText("cancel"); // NOI18N
+            btnCancel.setIcon(new ImageIcon("imgs/cancel.gif"));
+            btnCancel.setText("Cancel"); // NOI18N
             btnCancel.setName("btnCancel"); // NOI18N
 
             javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -195,7 +200,7 @@ public class AlarmDialog extends JDialog{
     	item.setType("node");
     	
     	AlarmDialog dialog = new AlarmDialog(item);
-    	dialog.setSize(386, 200);
+    	dialog.setSize(386, 174);
     	dialog.setVisible(true);
     }
 }
