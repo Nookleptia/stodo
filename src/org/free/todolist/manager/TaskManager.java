@@ -8,7 +8,7 @@ package org.free.todolist.manager;
 import java.util.LinkedList;
 
 /**
- * @author dong.hu@china.jinfonet.com
+ * @author winter.hu@gmail.com
  * 
  */
 public final class TaskManager implements Task {
@@ -183,6 +183,23 @@ public final class TaskManager implements Task {
         }
     }
 
+    public boolean has(Task task){
+    	boolean exist = false;
+    	synchronized(tasks){
+    		int size = tasks.size();
+    		for(int i = 0; i < size;i++){
+    			Task current = tasks.get(i);
+    			if(current.getId() == null){
+    				continue;
+    			}
+    			if(current.getId().equals(task.getId())){
+    				exist = true;
+    			}
+    		}
+    	}
+    	return exist;
+    }
+    
     private TimerTask peekFirstTask() {
         if (tasks.size() == 0) {
             sig.waitSignal(0);
