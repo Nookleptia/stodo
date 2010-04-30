@@ -1,5 +1,12 @@
 package org.free.todolist.data;
 
+import org.free.todolist.util.JSONObject;
+
+/**
+ * Simple Text Mail Bean
+ * @author juntao.qiu@gmail.com
+ *
+ */
 public class SimpleTextMail {
 	private String sendTo;
 	private String ccTo;
@@ -31,5 +38,19 @@ public class SimpleTextMail {
 		this.content = content;
 	}
 	
+	public static SimpleTextMail parse(String json) throws Exception{
+		return _parse_(new JSONObject(json));
+	}
+	
+	public static SimpleTextMail _parse_(JSONObject json){
+		SimpleTextMail mail = new SimpleTextMail();
+
+		mail.setSendTo(json.optString("to"));
+		mail.setCcTo(json.optString("cc"));
+		mail.setSubject(json.optString("subject"));
+		mail.setContent(json.optString("content"));
+		
+		return mail;
+	}
 	
 }
