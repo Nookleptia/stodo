@@ -26,14 +26,29 @@ public class STodo {
 
 	public void initEnv(){
 		PluginManager pManager = TodoPluginManager.getInstance();
+		
 		Plugin system = 
-			new TodoPlugin("scripts/system.js", "system", "system initialize");
-		Plugin menubar = 
-			new TodoPlugin("scripts/menubar.js", "menubar", "application menubar");
+			new TodoPlugin("scripts/system.js", "system", "system initialize");		
 		pManager.install(system);
-		pManager.install(menubar);
 		
 		ScriptContext context = initContext();
+	}
+	
+	private static String parseScriptName(String name){
+		String scriptName;
+		int slash = name.lastIndexOf("/");
+		if(slash < 0){
+			scriptName = name.substring(0);
+		}else{
+			scriptName = name.substring(slash+1);
+		}
+		
+		int dot = scriptName.lastIndexOf(".");
+		if(dot >= 0){
+			scriptName = scriptName.substring(0, dot);
+		}
+		
+		return scriptName;
 	}
 	
 	public ScriptContext initContext(){
@@ -41,7 +56,9 @@ public class STodo {
 	}
 	
 	public void activePlugin(String scriptFile){
-		Plugin newPlugin = new TodoPlugin(scriptFile, scriptFile, scriptFile);
+		Plugin newPlugin = new TodoPlugin(scriptFile, 
+				parseScriptName(scriptFile), 
+				parseScriptName(scriptFile));
 		TodoPluginManager.getInstance().install(newPlugin);
 	}
 	
@@ -64,8 +81,12 @@ public class STodo {
 	public static void main(String[] args){
 		STodo sTodo = new STodo(new MainFrame("My todo list"));
 		sTodo.initEnv();
+		
 		Plugin system = TodoPluginManager.getInstance().getPlugin("system");
-		system.putValueToContext("application", sTodo);
-		system.execute("_init_", new Object());
+		system.putValueToContext("Application", sTodo);
+		system.putValueToContext("DataModel", new DataModel());
+		system.putValueToContext("Util", new Util());
+		
+		system.execute("main", new Object());
 	}
 }
