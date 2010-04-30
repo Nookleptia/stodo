@@ -8,7 +8,8 @@ In this page, I'll introduce you how to using those JavaScript functions to do w
 Here are some examples:
 
 ==Using Swing to make a Alert dialog==
-{{{{
+{{{
+
 //show the message as a message dialog
 function alert(message){
 	JOptionPane.showMessageDialog(
@@ -17,10 +18,12 @@ function alert(message){
 			"Alert", 
 			JOptionPane.INFORMATION_MESSAGE);
 }
+
 }}}
 
 ==Log information on the console==
 {{{
+
 //just print a message on the console
 function log(message){
 	var prefix = "[stodo log trace] ";
@@ -31,10 +34,13 @@ function log(message){
 	}
 	println(prefix+message);
 }
+
 }}}
 
 ==Insert an new item via JavaScript==
+
 {{{
+
 function insertNewTodo(def){
 	//the default new to-do template
 	var item = createNewTodo(def);
@@ -48,11 +54,13 @@ function insertNewTodo(def){
 
 ==Send a e-mail to friend==
 {{{
+
 sendEmail({
 	to : "juntao.qiu@gmail.com",
 	subject : "script test",
 	content : createNewTodo(null)
 });
+
 }}}
 
 ----
