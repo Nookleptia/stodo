@@ -7,7 +7,7 @@ In this page, I'll introduce you how to using those JavaScript functions to do w
 = Details =
 Here are some examples:
 
-_Using Swing to make a Alert dialog_
+==Using Swing to make a Alert dialog==
 {{{{
 //show the message as a message dialog
 function alert(message){
@@ -19,7 +19,7 @@ function alert(message){
 }
 }}}
 
-_Log information on the console_
+==Log information on the console==
 {{{
 //just print a message on the console
 function log(message){
@@ -33,7 +33,7 @@ function log(message){
 }
 }}}
 
-_Insert an new item via JavaScript_
+==Insert an new item via JavaScript==
 {{{
 function insertNewTodo(def){
 	//the default new to-do template
@@ -46,7 +46,7 @@ function insertNewTodo(def){
 
 }}}
 
-_Send a e-mail to friend_
+==Send a e-mail to friend==
 {{{
 sendEmail({
 	to : "juntao.qiu@gmail.com",
