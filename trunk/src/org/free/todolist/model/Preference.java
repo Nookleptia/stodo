@@ -1,16 +1,41 @@
 package org.free.todolist.model;
 
+/**
+ * User preference, include network settings, mail account information
+ * and other useful information. Those information stored in a single 
+ * properties file in application folder.
+ * <br>
+ * Just a simple java-bean
+ * <br>
+ * @author juntao.qiu@gmail.com
+ *
+ */
 public class Preference {
+	//is proxy auto detect?
 	private boolean isProxyAutoDetect;
+	
+	//proxy hostname or ip address
 	private String proxyHost;
+	
+	//proxy port
 	private String proxyPort;
 	
+	//where you want to export your tasks to?
 	private String exportPath;
 	
+	//use ssl in mail server or not
 	private boolean useSSL;
+	
+	//the email server address
 	private String mailHost;
+	
+	//the email server port
 	private String mailPort;
+	
+	//your account on the email server
 	private String username;
+	
+	//password
 	private String password;
 	
 	public boolean isProxyAutoDetect() {
