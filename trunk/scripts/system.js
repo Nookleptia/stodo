@@ -1,14 +1,25 @@
+importPackage(java.awt, java.awt.event)
+importPackage(Packages.javax.swing)
+importPackage(java.io)
+importClass(java.lang.System)
+
 /*
  * put all initialize code here
  */
-function _init_(){
+function main(){
+	var app = Application;
+	var ui = app.getUI();
+	
 	//set look and feel to windows
-	application.getUI().setLookAndFeel("windows");
+	ui.setLookAndFeel("windows");
 	
 	//load some new scripts
-	application.activePlugin("scripts/help.js");
-	application.activePlugin("scripts/util.js");
+	app.activePlugin("scripts/json.js");
+	app.activePlugin("scripts/date.js");
+	app.activePlugin("scripts/util.js");
+	app.activePlugin("scripts/menubar.js");
+	app.activePlugin("scripts/misc.js");
 	
-	//launch the main frame
-	application.launch();
+	app.launch();
+	//loadTodosFromFile("todos.txt");
 }
