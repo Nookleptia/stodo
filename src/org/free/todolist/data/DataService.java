@@ -9,7 +9,10 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.free.todolist.manager.TaskService;
 import org.free.todolist.model.TodoItem;
+import org.free.todolist.plugin.Plugin;
+import org.free.todolist.plugin.TodoPluginManager;
 
 /**
  * This is the data-service of <code>sTodo</code>, it provides
@@ -23,6 +26,11 @@ public class DataService {
 	private String message;
 	private boolean status;
 	
+	/*
+	 * sTodo using the embedded database sqlite as inner
+	 * data-set, DataService can provide data to other module
+	 * of sTodo. 
+	 */
 	private DataService(){
 		try {
 			Class.forName("org.sqlite.JDBC");
@@ -39,7 +47,6 @@ public class DataService {
 				instance = new DataService();
 			}
 		}
-		
 		return instance;
 	}
 	
@@ -51,9 +58,13 @@ public class DataService {
 	 */
 	public boolean addItem(TodoItem todo){
 		String query = "INSERT INTO stodoitem (type, desc, timeout, period, note, status) VALUES (?, ?, ?, ?, ?, ?)";
+		Connection con = null;
+		PreparedStatement pstat = null;
+		
 		try {
-			Connection con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
-			PreparedStatement pstat = con.prepareStatement(query);
+			con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
+			pstat = con.prepareStatement(query);
+			
 			pstat.setString(1, todo.getType());
 			pstat.setString(2, todo.getDesc());
 			pstat.setString(3, todo.getTimeout());
@@ -63,18 +74,27 @@ public class DataService {
 			
 			pstat.execute();
 			
+			//get last item id of the todo
 			ResultSet rs = pstat.getGeneratedKeys();
 			while(rs.next()){
 				int id = rs.getInt(1);
 				todo.setId(String.valueOf(id));
 			}
-			status = true;
-			
+
+			pstat.close();
 			con.close();
+			status = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			message = e.getMessage();
 			status = false;
+		} finally {
+			if(pstat != null){
+				try{pstat.close();}catch(Exception e){}
+			}
+			if(con != null){
+				try{con.close();}catch(Exception e){}
+			}
 		}
 		
 		return status;
@@ -88,16 +108,29 @@ public class DataService {
 	 */
 	public boolean removeItem(TodoItem todo){
 		String query = "DELETE FROM stodoitem WHERE itemid="+todo.getId();
+		Connection con = null;
+		Statement stat = null;
+		
 		try{
-			Connection con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
-			Statement stat = con.createStatement();
+			con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
+			stat = con.createStatement();
+
 			stat.execute(query);
-			status = true;
+
+			stat.close();
 			con.close();
+			status = true;
 		}catch(Exception e){
 			e.printStackTrace();
 			message = e.getMessage();
 			status = false;
+		} finally {
+			if(stat != null){
+				try{stat.close();}catch(Exception e){}
+			}
+			if(con != null){
+				try{con.close();}catch(Exception e){}
+			}
 		}
 		
 		return status;
@@ -110,9 +143,11 @@ public class DataService {
 	 */
 	public boolean updateItem(TodoItem todo){
 		String query = "UPDATE stodoitem SET type=?, desc=?, timeout=?, period=?, note=?, status=? WHERE itemid="+todo.getId();
+		Connection con = null;
+		PreparedStatement pstat = null;
 		try{
-			Connection con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
-			PreparedStatement pstat = con.prepareStatement(query);
+			con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
+			pstat = con.prepareStatement(query);
 			pstat.setString(1, todo.getType());
 			pstat.setString(2, todo.getDesc());
 			pstat.setString(3, todo.getTimeout());
@@ -121,13 +156,21 @@ public class DataService {
 			pstat.setString(6, todo.getStatus());
 			
 			pstat.execute();
-			status = true;
-			
+
+			pstat.close();
 			con.close();
+			status = true;
 		}catch(Exception e){
 			e.printStackTrace();
 			message = e.getMessage();
 			status = false;
+		} finally {
+			if(pstat != null){
+				try{pstat.close();}catch(Exception e){}
+			}
+			if(con != null){
+				try{con.close();}catch(Exception e){}
+			}
 		}
 		
 		return status;
@@ -143,10 +186,18 @@ public class DataService {
 	 */
 	public List<TodoItem> searchList(String by, String value){
 		List<TodoItem> list = new LinkedList<TodoItem>();
-		String query = "SELECT itemid, type, desc, timeout, period, status, note FROM stodoitem WHERE "+by+" LIKE \""+value+"\"";
+		String query = 
+			"SELECT itemid, type, desc, timeout, period, status, note FROM stodoitem WHERE "+
+			by+
+			" LIKE \""+
+			value+
+			"\"";
+		Connection con = null;
+		Statement stat = null;
 		try{
-			Connection con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
-			Statement stat = con.createStatement();
+			con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
+			stat = con.createStatement();
+			
 			ResultSet rs = stat.executeQuery(query);
 			while(rs.next()){
 				TodoItem item = new TodoItem();
@@ -160,11 +211,67 @@ public class DataService {
 				
 				list.add(item);
 			}
+			stat.close();
+			con.close();
 			status = true;
 		}catch(Exception e){
 			e.printStackTrace();
 			message = e.getMessage();
 			status = false;
+		} finally {
+			if(stat != null){
+				try{stat.close();}catch(Exception e){}
+			}
+			if(con != null){
+				try{con.close();}catch(Exception e){}
+			}
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * get all items from database, used for init the UI.
+	 * @return
+	 */
+	public List<TodoItem> getAllItems(){
+		List<TodoItem> list = new LinkedList<TodoItem>();
+		String sql = "SELECT itemid, type, desc, timeout, period, note, status FROM stodoitem";
+		Plugin plUtil = TodoPluginManager.getInstance().getPlugin("util");
+		
+		String date = null;
+		Statement stat = null;
+		ResultSet rs = null;
+		Connection con = null;
+		try {
+			con = DriverManager.getConnection("jdbc:sqlite:stodoitem");
+			stat = con.createStatement();
+			rs = stat.executeQuery(sql);
+			while (rs.next()) {
+				TodoItem node = new TodoItem();
+				node.setId(String.valueOf(rs.getInt("itemid")));
+				node.setType(rs.getString("type"));
+				node.setDesc(rs.getString("desc"));
+				
+				date = (String)plUtil.execute("parseTimeout", rs.getString("timeout"));
+				node.setTimeout(date);
+				
+				node.setPeriod(rs.getString("period"));
+				node.setNote(rs.getString("note"));
+				node.setStatus(rs.getString("status"));
+				list.add(node);
+			}
+			stat.close();
+			con.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if(stat != null){
+				try{stat.close();}catch(Exception e){}
+			}
+			if(con != null){
+				try{con.close();}catch(Exception e){}
+			}
 		}
 		
 		return list;
